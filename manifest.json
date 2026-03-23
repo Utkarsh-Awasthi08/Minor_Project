@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "LeetCode Tracker",
+    "version": "1.0",
+    "description": "Capture code + result from LeetCode",
+  
+    "permissions": ["storage"],
+  
+    "host_permissions": [
+      "https://leetcode.com/*"
+    ],
+  
+    "content_scripts": [
+      {
+        "matches": ["https://leetcode.com/*"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ],
+  
+    "web_accessible_resources": [
+      {
+        "resources": ["inject.js"],
+        "matches": ["https://leetcode.com/*"]
+      }
+    ]
+  }
