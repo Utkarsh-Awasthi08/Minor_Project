@@ -24,33 +24,6 @@ function getCode() {
     });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // console.log("Extension Loaded ✅");
 // function getCode() {
     
@@ -70,6 +43,20 @@ function getCode() {
 //         console.error("Error accessing Monaco Editor:", e);
 //     }
 // }
+
+function getUserId() {
+    let userId = localStorage.getItem("leetcode_user");
+
+    if (!userId) {
+        userId = prompt("Enter your LeetCode username:");
+        if (userId) {
+            localStorage.setItem("leetcode_user", userId);
+        }
+    }
+
+    return userId;
+}
+
 let problemName = "";
 
 function getProblemNameFromURL() {
@@ -95,6 +82,25 @@ function getProblemNameFromURL() {
 }
 
 getProblemNameFromURL();
+
+// 1. Initialize the empty array
+let linkTexts = [];
+
+function extractLinkTexts() {
+    // 2. Get the HTMLCollection using your specific classes
+    const elements = document.getElementsByClassName("no-underline hover:text-current relative inline-flex items-center justify-center text-caption px-2 py-1 gap-1 rounded-full bg-fill-secondary text-text-secondary");
+
+    // 3. Convert the HTMLCollection to an Array and loop through it
+    // We use Array.from() to allow us to use .forEach()
+    Array.from(elements).forEach(element => {
+        // 4. Push the text content into our array
+        // .innerText or .textContent works; .innerText ignores hidden text
+        linkTexts.push(element.innerText);
+    });
+
+    console.log("Extracted Texts:", linkTexts);
+}
+extractLinkTexts();
 
 function getResultContainer() {
     return document.querySelector('[data-layout-path="/ts0/t1"]');
@@ -122,6 +128,7 @@ function getResultStatus() {
 }
 
 async function captureData() {
+    const userId = getUserId();
     const code = await getCode();
     const error = getError();
     const status = getResultStatus();
@@ -134,17 +141,26 @@ async function captureData() {
     if (!code) return;
 
     const data = {
+        userId: userId,
         problem: problemName,
         url,
         code,
         error,
         status,
+        mistake: "",
+        topic: linkTexts,
         timestamp: new Date().toISOString()
     };
-
-
     console.log("Captured Data:", data);
     submissionTriggered = false;
+    fetch("http://localhost:3000/submission", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+    
     // Save locally (temporary)
     chrome.storage.local.set({ lastSubmission: data });
 }
