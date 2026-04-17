@@ -110,7 +110,8 @@ function getError() {
     const container = getResultContainer();
     if (!container) return null;
 
-    const errorEl = container.querySelector('div[class="font-menlo whitespace-pre-wrap break-all text-xs text-red-60 dark:text-red-60"]');
+    const errorEl = container.querySelector(".whitespace-pre-wrap.break-all.font-menlo.text-xs.text-red-60.dark\\:text-red-60");   
+    console.log("Error Element:", errorEl);
     return errorEl ? errorEl.innerText.trim() : null;
 }
 
@@ -148,7 +149,7 @@ async function captureData() {
         error,
         status,
         mistake: "",
-        topic: linkTexts,
+        topics: linkTexts,
         timestamp: new Date().toISOString()
     };
     console.log("Captured Data:", data);
@@ -177,16 +178,19 @@ document.addEventListener('click', (e) => {
 });
 
 const observer = new MutationObserver(() => {
+    if (!submissionTriggered) return;
+
     const resultPanel = document.querySelector('[data-layout-path="/ts0/tb1"]');
-    console.log("DOM changed, checking for result panel...");
-    if (resultPanel && submissionTriggered) {
-        observer.disconnect();
+
+    if (resultPanel) {
+        console.log("Result panel detected...");
+
+        submissionTriggered = false; // stop further triggers immediately
+
         setTimeout(() => {
-            console.log("Result panel detected, capturing data...");
             captureData();
-            console.log("Data captured, resetting submission trigger.");
-            submissionTriggered = false;
-        }, 6000);
+            console.log("Data captured ✅");
+        }, 7000); // shorter + safer
     }
 });
 
