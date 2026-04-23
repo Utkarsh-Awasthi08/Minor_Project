@@ -110,14 +110,18 @@ function getError() {
     const container = getResultContainer();
     if (!container) return null;
 
-    const errorEl = container.querySelector(".whitespace-pre-wrap.break-all.font-menlo.text-xs.text-red-60.dark\\:text-red-60");   
-    console.log("Error Element:", errorEl);
-    return errorEl ? errorEl.innerText.trim() : null;
+    const error = container.querySelector('.align-middle').querySelector('div').textContent;
+
+    console.log("Error Element:", error);
+    return error ? error : null;
 }
 
 function getResultStatus() {
     const container = getResultContainer();
     if (!container) return null;
+    const wrong_ans = document.querySelector("h3.flex.items-center.text-xl");
+    if(wrong_ans)
+    return wrong_ans ? wrong_ans.innerText.trim() : null;
     const errorEl = container.querySelector('span[class*="text-red"]');
     const success = container.querySelector('[data-e2e-locator="submission-result"]');
 
@@ -127,7 +131,17 @@ function getResultStatus() {
     else if(success)
     return success ? success.innerText.trim() : null;
 }
-
+function sendToBackend(data) {
+    chrome.runtime.sendMessage(
+      {
+        type: "SAVE_SUBMISSION",
+        payload: data
+      },
+      (response) => {
+        console.log("Response:", response);
+      }
+    );
+  }
 async function captureData() {
     const userId = getUserId();
     const code = await getCode();
@@ -154,13 +168,7 @@ async function captureData() {
     };
     console.log("Captured Data:", data);
     submissionTriggered = false;
-    fetch("http://localhost:3000/submission", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    });
+    sendToBackend(data);
     
     // Save locally (temporary)
     chrome.storage.local.set({ lastSubmission: data });
@@ -190,7 +198,7 @@ const observer = new MutationObserver(() => {
         setTimeout(() => {
             captureData();
             console.log("Data captured ✅");
-        }, 7000); // shorter + safer
+        }, 9000); // shorter + safer
     }
 });
 
